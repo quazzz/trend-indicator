@@ -1,0 +1,37 @@
+//@version=6
+indicator("Trend Indicator without ADX", overlay=true)
+
+// Inputs
+maLength = input.int(50, "MA Length")
+atrLength = input.int(14, "ATR Length")
+atrThreshold = input.float(0.5, "ATR Threshold (Volatility)")
+
+// Calculate Moving Average
+ma = ta.sma(close, maLength)
+
+// Calculate ATR
+atr = ta.atr(atrLength)
+
+// Calculate MA slope (difference between current and previous MA)
+maSlope = ma - ma[1]
+
+// Define trend conditions
+uptrend = maSlope > 0 and atr > atrThreshold
+downtrend = maSlope < 0 and atr > atrThreshold
+notrend = atr <= atrThreshold
+
+// Plot MA
+plot(ma, color=color.orange, title="MA")
+
+// Background color based on trend
+bgcolor(uptrend ? color.new(color.green, 85) : na)
+bgcolor(downtrend ? color.new(color.red, 85) : na)
+bgcolor(notrend ? color.new(color.gray, 85) : na)
+
+// Trend label on last bar
+var label trendLabel = na
+if (barstate.islast)
+    label.delete(trendLabel)
+    trendText = uptrend ? "Uptrend" : downtrend ? "Downtrend" : "No Trend"
+    trendColor = uptrend ? color.green : downtrend ? color.red : color.gray
+    trendLabel := label.new(bar_index, high, trendText, color=trendColor, style=label.style_label_down, textcolor=color.white)
